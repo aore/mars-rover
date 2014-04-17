@@ -1,6 +1,12 @@
 # oi.py
 
 import comm
+from enum import IntEnum
+
+
+class OICommand(IntEnum):
+    init = 0
+
 
 
 def init():
@@ -10,7 +16,10 @@ def init():
     iRobot create.
     """
 
-    raise NotImplementedError
+    tx_mesg(Message.command, Subsys.oi, OICommand.init, None)
+    rx_mesg(Message.command, Subsys.oi, OICommand.init, False)
+
+
 
 
 # TODO: Design other functions.

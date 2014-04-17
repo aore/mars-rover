@@ -1,11 +1,24 @@
+# sonar.py
+
+import comm
+from enum import IntEnum
+
+
+class SonarCommand(IntEnum):
+    init = 0
+    calibrate = 1
+    readings = 2
+
+
+
 def init():
     """
     Initializes the sonar subsystem for use. Also activates the sonar, i.e.,
     the sonar state is made to be "on".
     """
 
-    raise NotImplementedError
-
+    tx_mesg(Message.command, Subsys.sonar, SonarCommand.init, None)
+    rx_mesg(Message.command, Subsys.sonar, SonarCommand.init, False)
 
 
 
@@ -15,8 +28,7 @@ def calibrate():
     Initiates the `control`-operated calibration routine of the sonar subsystem.
     """
 
-
-
+    raise NotImplementedError()
 
 
 
@@ -36,11 +48,11 @@ def readings(n, raw = True, rand = False, timestamps = False):
     rather than the approximated distance as calculated by `rover`.
 
     If `rand` is `True`, then readings will not be taken as often as possible.
-    Rather, one each reading should delayed by a random amount of time before
-    being taken.
+    Rather, each reading should delayed by a random amount of time before it
+    is started.
 
     If `timestamps` is `True`, then timestamps indicating when a reading was
     taken are streamed back to `control` along with the readings themselves.
     """
 
-    raise NotImplementedError
+    raise NotImplementedError()

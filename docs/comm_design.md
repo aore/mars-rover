@@ -16,25 +16,31 @@ It should be the purpose of `comm.c` (the communications module of `rover`) to f
 			Start
 		</td>
 		<td>
-			Message Type
+			Message
 		</td>
 		<td>
-			Subsystem
+			Subsys
 		</td>
 		<td>
-			Data Length
+			Data Length, n
 		</td>
 		<td>
-			Data Byte
+			Data Byte 0
 		</td>
 		<td>
-			Data Byte
+			Data Byte 1
 		</td>
 		<td>
 			...	
 		</td>
 		<td>
-			Boolean "Keep Going?"
+			Data Byte n - 1
+		</td>
+		<td>
+			Real Data Length
+		</td>
+		<td>
+			Another Data Frame?
 		</td>
 		<td>
 			...

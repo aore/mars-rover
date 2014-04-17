@@ -3,15 +3,32 @@
 import comm
 
 
+class ServoCommand(IntEnum):
+    init = 0
+    calibrate = 1
+    state = 2
+    angle = 3
+    pulse = 4
+
+
 def init():
     """
     Initializes the servo subsystem for use. Also activates the servo, i.e.,
     the servo state is made to be "on".
     """
 
-    raise NotImplementedError
+    tx_mesg(Message.command, Subsys.servo, ServoCommand.init, None)
+    rx_mesg(Message.command, Subsys.servo, ServoCommand.init, False)
 
 
+
+
+def rover_calibrate():
+    """
+    Initiates the `rover`-operated calibration routine of the servo subsystem.
+    """
+    tx_mesg(Message.command, Subsys.servo, ServoCommand.calibrate, None)
+    rx_mesg(Message.command, Subsys.servo, ServoCommand.calibrate, False)
 
 
 
@@ -20,8 +37,7 @@ def calibrate():
     Initiates the `control`-operated calibration routine of the servo subsystem.
     """
 
-    raise NotImplementedError
-
+    raise NotImplementedError()
 
 
 
@@ -34,7 +50,7 @@ def state(s = None)`:
     servo will be turned off.
     """
 
-    raise NotImplementedError
+    raise NotImplementedError()
 
 
 
@@ -53,16 +69,26 @@ def angle(angle, wait = True):
     this "finished" signal.
     """
 
-    raise NotImplementedError
+    raise NotImplementedError()
+    
 
 
 
-def pulse_width(pw):
+
+def pulse(p):
     """
-    Sets `pw` as the proportion of the servo's PWM cycle which is logical-high.
+    Sets `p` as the proportion of the servo's PWM cycle which is logical-high.
 
     Expects a floating point number in the interval (0, 1), (though the values
     near the boundaries of this interval are probably not advisable choices).
+
+    Sends a single 16-bit floating point numer in the data segment of the
+    sending message. Expects nothing the the response message's data segment
     """
 
-    raise NotImplementedError
+    if not (0.0 < p and p < 1.0):
+        raise ValueError("Argument `p` must be in the open interval (0, 1).")
+
+    b = pack("<", p)
+    tx_mesg(Message.command, Subsys.servo, ServoCommand.pusle, b)
+    rx_mesg(Message.command, Subsys.servo, ServoCommand.pulse, False)

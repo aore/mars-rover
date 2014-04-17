@@ -5,22 +5,29 @@
 import serial
 #import numpy as np
 from enum import IntEnum
+from threading import Thread
+from queue import Queue
 
 
 MAX_DATA_FRAME_LEN = 100
+DEFAULT_SERIAL_PORT = "/dev/tty.ElementSerial-ElementSe"
 
 
 ser = None  # The serial connection to the rover.
 
 
+
+
 class Signal(IntEnum):
+    """ Different control signals to be sent/received as bytes in a message. """
     null = 0
     start = 1  # Start of message
     stop = 2   # End of message
 
 
 
-class MsgType(IntEnum):
+class Message(IntEnum):
+    """ Identifies different message types. """
     error = 3
     ping = 4
     echo = 5
@@ -28,7 +35,8 @@ class MsgType(IntEnum):
 
 
 
-class Subsystem(IntEnum):
+class Subsys(IntEnum):
+    """ Identifies different subsystems in messages. """
     lcd = 0
     oi = 1
     sonar = 2
@@ -38,23 +46,13 @@ class Subsystem(IntEnum):
 
 
 
-def connect():
-    ser = serial.Serial(port = 0, baudrate = 57600, timeout = 1)
 
-    
-
-def disconnect():
-    ser.close()
-    ser = None
-    
-
-
-def send_message(t, subsys = None, command = None, data = None):
+def tx_mesg(t, subsys = None, command = None, data = None):
     """ Sends a message to the rover as described by the arguments.
 
-    - `t` must be a `MsgType`. This is the message type of the message to be
+    - `t` must be a `Message`. This is the message type of the message to be
       sent.
-    - `subsys` must be `None` or a `Subsystem`. This is the value to be sent
+    - `subsys` must be `None` or a `Subsys`. This is the value to be sent
       in the subsystem ID byte. If this is `None`, then no such byte will be
       sent in this message.
     - `command` is either `None` or an int that is a valid command code (of the
@@ -66,16 +64,16 @@ def send_message(t, subsys = None, command = None, data = None):
       data frames will be sent.
 
     The message being sent will illicit a subsequent response message (of the
-    same type). Reading this response should be handled by `receive_message()`.
+    same type). Reading this response should be handled by `rx_mesg()`.
 
     You should expect that no checks of correctness are performed on the args.
     If you pass garbage to this function, garbage may well be sent to the rover.
     """
 
     # Some validation for function arguments:
-    if type(t) != MsgType:
+    if type(t) != Message:
         raise Exception()
-    if subsys != None and type(subsys) != Subsystem:
+    if subsys != None and type(subsys) != Subsys:
         raise Exception()
 
     # `subsys` is `None` iff `command` is `None`:
@@ -97,13 +95,13 @@ def send_message(t, subsys = None, command = None, data = None):
 
 
 
-def receive_message(t, subsys = None, command = None, has_data = False):
+def rx_mesg(t, subsys = None, command = None, has_data = False):
     """ Recieves a message from the rover, and expects it to have the format
     specified by the given arguments.
 
-    - `t` must be a `MsgType`. This is the expected message type of the
+    - `t` must be a `Message`. This is the expected message type of the
       message being received.
-    - `subsys` must be `None` or a `Subsystem`. This is the expected Subsystem
+    - `subsys` must be `None` or a `Subsys`. This is the expected Subsystem
       ID of the message being received. If this is `None`, then no Subsystem ID
       byte is expected.
     - `command` must be `None` or an int that is a valid command code of the
@@ -117,25 +115,30 @@ def receive_message(t, subsys = None, command = None, has_data = False):
     as a `bytes` object.
 
     If there isn't a timely response message, or if the response has
-    unexpected features, an error is raised.
+    unexpected features, an `Exception` is raised.
     """
 
-    # TODO: raise errors for timeouts
+    ser.timeout(1)  # Set timeouts to be 1 second while reading each byte.
+    # If a timeout occurs while trying to read one byte, then a bytes object of
+    # length zero will be returned.
 
     if ser.read() != Signal.start:
-        raise Exception("Did not find a start signal in the response message when expected.")
+        raise Exception("Did not receive the expected Start Signal.")
     if ser.read() != t:
-        raise Exception("The response message's message type was incorrect.")
+        raise Exception("Did not receive the expected Message ID.")
+
     if subsys != None and ser.read() != subsys:
-        raise Exception("The response message's Subsystem ID was incorrect.")
+        raise Exception("Did not receive the expected Subsystem ID.")
     if command != None and ser.read() != command:
-        raise Exception("The response message's Command ID was incorrect.")
+        raise Exception("Did not receive the expected Command ID.")
 
     if has_data:
         rv = read_data()
 
     if ser.read() != Signal.stop:
-        raise Exception("Did not find a stop signal in the response when expected.")
+        raise Exception("Did not receive the expected Stop Signal.")
+
+    ser.timeout(None)  # Disable timeouts.
 
 
 
@@ -182,9 +185,7 @@ def frame_data(d):
 
 
 def read_data(d):
-    """
-    Reads data frame and returns data bytes.
-    """
+    """ Reads data frame and returns data bytes. """
 
     keep_going = True
     num_good_bytes = 0
@@ -221,9 +222,7 @@ def read_data(d):
 
 
 def heartbeat():
-    """
-    Sends ping and receives ping signals to the rover indefinitely.
-    """
+    """ Sends ping and receives ping signals to the rover indefinitely. """
 
     while True:
         ping()
@@ -233,13 +232,34 @@ def heartbeat():
 
 
 def ping():
-    send_message(MsgType.ping)
-    receive_message(MsgType.ping)
+    tx_mesg(Message.ping)
+    rx_mesg(Message.ping)
     
 
 
-def echo():
-    raise NotImplemented()
+def echo(s):
+    """
+    Sends a message of type `echo` along with the supplied string `s`.
+    Expects an identical message to be returned, i.e., a message of type `echo`
+    along with this same string `s`.
+    """
+
+    b = bytes(s, 'utf-8')
+    tx_mesg(Message.echo, data = b)
+    rv = rx_mesg(Message.echo, data = True)
+    if b != rv:
+        raise Exception("A different string was returned from the rover.")
+
+
+
+def handle_rover_error(data):
+    """
+    Interprets the data segment of an error sent from the `rover` and responds
+    to it as appropriate.
+    """
+
+    raise NotImplementedError()
+
 
 
 
@@ -251,3 +271,41 @@ def tty(stream):
 
     while True:
         stream.write(ser.read())
+
+
+
+
+def connect(port = DEFAULT_SERIAL_PORT):
+
+    """ Opens the serial connection on the given `port` and starts the `aux`
+    thread to listen for any unexpected (i.e. un-prompted) messages. """
+
+    ser = serial.Serial(port, baudrate = 57600)
+    start_aux()  # Sends signal that allows `aux` to listen for messages.
+
+
+
+
+def disconnect():
+    stop_aux()
+    ser.close()
+    ser = None
+    aux = None
+    q = None
+    
+
+
+
+def main():
+    if len(sys.argv) != 2:
+        sys.stderr.write("Expected one argument, the path of the serial tty.")
+        exit()
+
+    connect(sys.argv[1])
+    # TODO: do some stuff
+        
+
+logging.setLevel("INFO")
+
+if __name__ == "__main__":
+    main()
