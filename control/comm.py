@@ -211,6 +211,8 @@ def read_data():
     
     global ser
 
+    global ser
+
     keep_going = True
     num_good_bytes = 0
     temp_bytes_list = []
@@ -314,7 +316,8 @@ def connect(port = DEFAULT_SERIAL_PORT):
         pass
 
     ser.timeout = 1
-    aux.start(ser)  # Sends signal that allows `aux` to listen for messages.
+    #DEBUG
+    #aux.start(ser)  # Sends signal that allows `aux` to listen for messages.
 
 
 
@@ -339,6 +342,15 @@ def main():
 
     connect()
     ping()
+    """
+    # Manually Issue and Read.
+    ser.write(b'\x01')
+    ser.write(b'\x04')
+    ser.write(b'\x02')
+    print(ser.read())
+    print(ser.read())
+    print(ser.read())
+    """
 
 
 if __name__ == "__main__":
