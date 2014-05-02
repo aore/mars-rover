@@ -23,9 +23,16 @@ DEFAULT_CALIBRATION_DATA_DIR = 'calibrate/data/default'
 
 zorders = {
     'breadcrumbs': 0,
-    'scan_field': 1,
-    'scan_data': 2,
-    'contours': 3
+    
+    'bumps': 1,
+    'cliffs': 2,
+    'drops': 3,
+    'tape': 4,
+    
+    'scan_field': 5,
+    'scan_data': 6,
+    
+    'contours': 7
 }
 
 
@@ -105,7 +112,7 @@ class Environment():
         """ Updates the rover's location in the Environment by translating its
         position forward by the given `dist`. """
         
-        self.add_breadcumb()
+        self.add_breadcrumb()
         new_loc = self.conv_radial(90, dist)
         self.loc(new_loc)
 
@@ -175,8 +182,8 @@ class Environment():
 
 
 
-    def add_breadcumb(self):
-        """ Adds a breadcumb """
+    def add_breadcrumb(self):
+        """ Adds a breadcrumb """
         c = Circle(self._loc, radius = 16.25)
         c.set_facecolor('0.65')  # grey
         c.set_edgecolor('black')
@@ -195,9 +202,89 @@ class Environment():
         based on the rover's location and direction, but also where on the
         robot that particular danger-detection sensor is located. """
         
-        # TODO: proper handling
+        """if danger_id == left_bumper:
+            
+        elif danger_id == right_bumper:
+            
+        elif danger_id == left_and_right_bumper:
+
+        elif danger_id == front_left_cliff:
+
+        elif danger_id == front_right_cliff:
+
+        elif danger_id == left_cliff:
+
+        elif danger_id == right_cliff:
+
+        elif danger_id == white_tape_front_left:
+
+        elif danger_id == white_tape_front_right:
+
+        elif danger_id == white_tape_left:
+
+        elif danger_id == white_tape_right:
+
+        elif danger_id == left_wheel:
+
+        elif danger_id == right_wheel:
+
+        elif danger_id == middle_wheel:
+
+        else:
+            raise NotImplementedError()
+        """
+
+
+        # Find the danger location using `danger_angle` and `danger_distance`
+        # TODO: maybe later
+        # danger_loc = conv_radial(self, danger_theta, danger_r)
+
+        # Plot
+        if (1 <= danger_id <= 3): # Bumper range in OIStopID
+            """ Adds a bump """
+            c = Circle(self._loc, radius = 6.25)
+            c.set_facecolor('0.65')  # grey
+            c.set_edgecolor('black')
+            c.set_zorder(zorders['bumps'])
+            c.set_fill(True)
+            self.view.add_artist(c)
+            self.bumps.append(c)
+            self.draw()
+        elif (4 <= danger_id <= 7): # Cliff range in OIStopID
+            """ Adds a cliff """
+            c = Circle(self._loc, radius = 6.25)
+            c.set_facecolor('0.65')  # grey
+            c.set_edgecolor('black')
+            c.set_zorder(zorders['cliffs'])
+            c.set_fill(True)
+            self.view.add_artist(c)
+            self.cliffs.append(c)
+            self.draw()
+        elif (12 <= danger_id <= 14): # Drop range in OIStopID
+            """ Adds a drop """
+            c = Circle(self._loc, radius = 6.25)
+            c.set_facecolor('0.65')  # grey
+            c.set_edgecolor('black')
+            c.set_zorder(zorders['drops'])
+            c.set_fill(True)
+            self.view.add_artist(c)
+            self.drops.append(c)
+            self.draw()
+        elif (8 <= danger_id <= 11): # White tape range in OIStopID
+            """ Adds tape """
+            c = Circle(self._loc, radius = 6.25)
+            c.set_facecolor('0.65')  # grey
+            c.set_edgecolor('black')
+            c.set_zorder(zorders['tape'])
+            c.set_fill(True)
+            self.view.add_artist(c)
+            self.tape.append(c)
+            self.draw()
+        else:
+            raise NotImplementedError()
+            
         # The following is the temporary workaround:
-        sys.stderr.write("danger found: " + str(danger_id))
+        sys.stderr.write("danger found: " + str(danger_id)) # TODO: check to see if enum strig is a thing
 
 
 
@@ -439,8 +526,7 @@ class Scanner():
 
             prev_angle = comb_scans[0][i][0]
         
-            return obj_list
-
+        return obj_list
 
 
 
