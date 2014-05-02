@@ -422,15 +422,15 @@ class Scanner():
         # Iterate through consolidated scans to find clumps of objects
         min_width = 3 # minimum degrees for an object to be recognized
         
-	prev_angle = comb_scans[0][0][0]
-	start = 0 # start index for the current object
+        prev_angle = comb_scans[0][0][0]
+        start = 0 # start index for the current object
 
-        # Go through all IR data
+         # Go through all IR data
         for i in range(0, len(comb_scans[0])):
             # If the reading is nan for IR, throw it out.
             if math.isnan(comb_scans[0][i][1]):
                 comb_scans = np.delete(comb_scans[0],i,0), np.delete(comb_scans[1],i,0)
-            
+        
             # Check for jumps in the non-NaN data, indicating a new object.
             if comb_scans[0][i][0] - prev_angle > 1:
                 obj = comb_scans[0][start:i], comb_scans[1][start:i]
@@ -438,8 +438,8 @@ class Scanner():
                 obj_list.append(obj)
 
             prev_angle = comb_scans[0][i][0]
-		
-        return obj_list
+        
+            return obj_list
 
 
 
