@@ -48,7 +48,7 @@
         <InterfaceName>JTAG</InterfaceName>
       </ToolOptions>
       <ToolType>com.atmel.avrdbg.tool.jtagicemkii</ToolType>
-      <ToolNumber>070000004693</ToolNumber>
+      <ToolNumber>070000004692</ToolNumber>
       <ToolName>JTAGICE mkII</ToolName>
     </com_atmel_avrdbg_tool_jtagicemkii>
     <com_atmel_avrdbg_tool_jtagice3plus>
