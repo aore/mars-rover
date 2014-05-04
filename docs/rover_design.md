@@ -1,8 +1,8 @@
 # Design of the rover Module #
 
-It should be the purpose of `rover.py` (the communications module of `control`) to transmit commands to the rover, while other python modules should describe control logic, perform data analysis, and render the GUI.
+It should be the purpose of `rover.py` is the communications module of `control`. 
 
-It should be the purpose of `control.c` (the communications module of `rover`) to follow these commands. It will manage command actions issued by `rover.py` and to package response data. In particular, `control.c` should offer up to `rover.py` the following capabilities in each of the relevant subsystems (i.e. `lcd`, `oi`, `sonar`, `servo`, and `ir`):
+It should be the purpose of `control.c` (the communications module of `rover`) to follow `control`'s commands. It will manage command actions issued by `rover.py` and package response data. In particular, `control.c` should offer up to `rover.py` the following capabilities in each of the relevant subsystems (i.e. `lcd`, `oi`, `sonar`, `servo`, and `ir`):
 
 - Initialize a subsystem.
 - Calibrate a subsystem.
@@ -144,6 +144,4 @@ Until a `rover` subsystem completes the given command, the subsystem will be del
 
 ## GUI ##
 
-The GUI would ideally include a python interpreter at which we can invoke individual commands. An issued command/query should return a list of data. It should also display a plot of the data from the robot.
-
-
+The user interface is a terminal. When the iRobot moves or rotates, IR/sonar data is collected, the iRobot bumps into an obstacle, or the iRobot discovers white tape or a cliff, a map is automatically updated to display the current data of the field. 
