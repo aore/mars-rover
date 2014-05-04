@@ -1,8 +1,8 @@
-# Design of the comm Module #
+# Design of the rover Module #
 
-It should be the purpose of `comm.py` (the communications module of `control`) to transmit commands to the rover, while other python modules should describe control logic, perform data analysis, and render the GUI.
+It should be the purpose of `rover.py` (the communications module of `control`) to transmit commands to the rover, while other python modules should describe control logic, perform data analysis, and render the GUI.
 
-It should be the purpose of `comm.c` (the communications module of `rover`) to follow these commands. It will manage command and control actions issued by `comm.py` and to package response data. In particular, `comm.c` should offer up to `comm.py` the following capabilities in each of the relevant subsystems (i.e. `lcd`, `oi`, `sonar`, `servo`, and `ir`):
+It should be the purpose of `control.c` (the communications module of `rover`) to follow these commands. It will manage command actions issued by `rover.py` and to package response data. In particular, `control.c` should offer up to `rover.py` the following capabilities in each of the relevant subsystems (i.e. `lcd`, `oi`, `sonar`, `servo`, and `ir`):
 
 - Initialize a subsystem.
 - Calibrate a subsystem.
@@ -73,7 +73,6 @@ Start, MesgID and Stop are essential in every message. SubsysID, the subsystem c
 - Sonar
 - Servo
 - IR
-- RNG
 
 
 
@@ -81,6 +80,7 @@ Start, MesgID and Stop are essential in every message. SubsysID, the subsystem c
 
 `control` should be able to calibrate each of the following `rover` subsystems:
 
+- Open Interface
 - Sonar
 - Servo
 - IR
@@ -106,7 +106,7 @@ Until a `rover` subsystem completes the given command, the subsystem will be del
 `control` need only be able to perform two commands on the lcd display: clear it and write a string to it. The response stream could just be signaling that when it is finally complete.
 
 - `init(sen)`
-- `puts(sen)`
+- `puts(sen, string)`
 - `clear(sen)`
 
 
@@ -114,16 +114,15 @@ Until a `rover` subsystem completes the given command, the subsystem will be del
 ### Open Interface Commands ###
 
 - `init(sen)`
-- `move(sen, speed = 500, distance = 3000, stream = False)`
+- `move(sen, dist = 300, speed = 90, stream = False)`
 - `rotate(sen, angle)`
-- `play_song(sen)`
+- `end_sequence(sen)`
 
 
 
 ### Sonar Commands ###
 
 - `init(sen)`
-- `calibrate(sen)`
 - `readings(n, raw = True, rand = False, timestamps = False)`
 
 
@@ -131,18 +130,15 @@ Until a `rover` subsystem completes the given command, the subsystem will be del
 ### Servo Commands ###
 
 - `init(sen)`
-- `calibrate(sen)`
-- `state(sen, s = None)`
 - `angle(sen, angle, wait = true)`
-- `pulse(sen, p)`
+- `pulse(sen, pw)`
 
 
 
 ### IR commands ###
 
 - `init(sen)`
-- `calibrate(sen)`
-- `readings(sen, n, raw = True, rand = False, timestamps = False)`
+- `readings(sen, n = 50, raw = True, rand = False, timestamps = False)`
 
 
 
